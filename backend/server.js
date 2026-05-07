@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import OpenAI from "openai";
+import { PrismaClient } from "@prisma/client";
 
 dotenv.config();
 
@@ -14,27 +15,80 @@ const client = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
+const prisma = new PrismaClient();
+
 app.get("/", (req, res) => {
   res.json({
     message: "Viska API virkar!",
   });
 });
 
+app.get("/messages", async (req, res) => {
+  try {
+    const messages = await prisma.chatMessage.findMany({
+      orderBy: {
+        createdAt: "asc",
+      },
+    });
+
+    res.json(messages);
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      error: "Tókst ekki að sækja skilaboð.",
+    });
+  }
+});
+
+app.delete("/messages", async (req, res) => {
+  try {
+    await prisma.chatMessage.deleteMany();
+
+    res.json({
+      message: "Samtal hreinsað.",
+    });
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      error: "Tókst ekki að hreinsa samtal.",
+    });
+  }
+});
+
 app.post("/ask", async (req, res) => {
   try {
     const { question } = req.body;
 
-    const response = await client.responses.create({
-      model: "gpt-4.1-mini",
-      input: `
+    await prisma.chatMessage.create({
+      data: {
+        role: "user",
+        content: question,
+      },
+    });
+
+const response = await client.responses.create({
+  model: "gpt-4.1-mini",
+  input: `
 Þú ert hjálparaðstoð fyrir eldri borgara á Íslandi.
 Svaraðu einfalt, hlýlega og skýrt.
 
 Spurning:
 ${question}
-      `,
-    });
+  `,
+});
 
+await prisma.chatMessage.create({
+  data: {
+    role: "assistant",
+    content: response.output_text,
+  },
+});
+
+res.json({
+  answer: response.output_text,
+});
     res.json({
       answer: response.output_text,
     });

@@ -13,6 +13,28 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
+  const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
+useEffect(() => {
+  const loadMessages = async () => {
+    try {
+      const res = await fetch(`${API_URL}/messages`);
+      const data = await res.json();
+
+      setMessages(
+        data.map((message: Message) => ({
+          role: message.role,
+          content: message.content,
+        }))
+      );
+    } catch (error) {
+      console.error("Tókst ekki að sækja skilaboð", error);
+    }
+  };
+
+  loadMessages();
+}, [API_URL]);
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({
       behavior: "smooth",
