@@ -127,6 +127,19 @@ useEffect(() => {
                     : "Viska"}
                 </p>
 
+                <button
+                  onClick={async () => {
+                    await fetch(`${API_URL}/messages`, {
+                      method: "DELETE",
+                    });
+
+                    setMessages([]);
+                  }}
+                  className="mt-4 bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-xl"
+                >
+                  Hreinsa samtal
+                </button>
+
                 <p className="whitespace-pre-line leading-8">
                   {message.content}
                 </p>

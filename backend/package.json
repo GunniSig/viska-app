@@ -4,8 +4,9 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
-  },
+  "start": "node server.js",
+  "postinstall": "prisma generate"
+},
   "keywords": [],
   "author": "",
   "license": "ISC",
