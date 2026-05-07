@@ -2,7 +2,9 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import OpenAI from "openai";
-import { PrismaClient } from "@prisma/client";
+import pkg from "@prisma/client";
+
+const { PrismaClient } = pkg;
 
 dotenv.config();
 
@@ -68,27 +70,24 @@ app.post("/ask", async (req, res) => {
       },
     });
 
-const response = await client.responses.create({
-  model: "gpt-4.1-mini",
-  input: `
+    const response = await client.responses.create({
+      model: "gpt-4.1-mini",
+      input: `
 Þú ert hjálparaðstoð fyrir eldri borgara á Íslandi.
 Svaraðu einfalt, hlýlega og skýrt.
 
 Spurning:
 ${question}
-  `,
-});
+      `,
+    });
 
-await prisma.chatMessage.create({
-  data: {
-    role: "assistant",
-    content: response.output_text,
-  },
-});
+    await prisma.chatMessage.create({
+      data: {
+        role: "assistant",
+        content: response.output_text,
+      },
+    });
 
-res.json({
-  answer: response.output_text,
-});
     res.json({
       answer: response.output_text,
     });
