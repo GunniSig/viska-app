@@ -27,23 +27,33 @@ useEffect(() => {
       return;
     }
 
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    if (!session?.access_token) {
+      setMessages([]);
+      return;
+    }
+
     try {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-
-      if (!session?.access_token) {
-        setMessages([]);
-        return;
-      }
-
       const res = await fetch(`${API_URL}/messages`, {
         headers: {
           Authorization: `Bearer ${session.access_token}`,
         },
       });
 
+      if (!res.ok) {
+        setMessages([]);
+        return;
+      }
+
       const data = await res.json();
+
+      if (!Array.isArray(data)) {
+        setMessages([]);
+        return;
+      }
 
       setMessages(
         data.map((message: Message) => ({
@@ -53,6 +63,7 @@ useEffect(() => {
       );
     } catch (error) {
       console.error("Tókst ekki að sækja skilaboð", error);
+      setMessages([]);
     }
   };
 
@@ -91,6 +102,9 @@ useEffect(() => {
   const {
     data: { session },
   } = await supabase.auth.getSession();
+
+console.log("SESSION:", session);
+console.log("TOKEN:", session?.access_token);
 
   if (!session?.access_token) {
     alert("Þú þarft að vera innskráður.");
@@ -175,10 +189,20 @@ useEffect(() => {
           <div className="flex gap-4">
             <button
               onClick={async () => {
-                await supabase.auth.signUp({
+                setMessages([]);
+
+                const { data, error } = await supabase.auth.signUp({
                   email,
                   password,
                 });
+
+                if (error) {
+                  alert(error.message);
+                  return;
+                }
+
+                setUser(data.user || null);
+                setMessages([]);
 
                 alert("Aðgangur búinn til!");
               }}
