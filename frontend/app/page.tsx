@@ -22,8 +22,27 @@ export default function Home() {
 
 useEffect(() => {
   const loadMessages = async () => {
+    if (!user) {
+      setMessages([]);
+      return;
+    }
+
     try {
-      const res = await fetch(`${API_URL}/messages`);
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (!session?.access_token) {
+        setMessages([]);
+        return;
+      }
+
+      const res = await fetch(`${API_URL}/messages`, {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+
       const data = await res.json();
 
       setMessages(
@@ -38,7 +57,7 @@ useEffect(() => {
   };
 
   loadMessages();
-}, [API_URL]);
+}, [API_URL, user]);
 
 useEffect(() => {
 
@@ -50,6 +69,9 @@ useEffect(() => {
     data: { subscription },
   } = supabase.auth.onAuthStateChange((_event, session) => {
     setUser(session?.user || null);
+    if (!session?.user) {
+      setMessages([]);
+    }
   });
 
   return () => {
@@ -64,48 +86,58 @@ useEffect(() => {
     });
   }, [messages]);
   const askBackend = async () => {
-    if (!question.trim()) return;
+  if (!question.trim()) return;
 
-    const userMessage: Message = {
-      role: "user",
-      content: question,
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  if (!session?.access_token) {
+    alert("Þú þarft að vera innskráður.");
+    return;
+  }
+
+  const userMessage: Message = {
+    role: "user",
+    content: question,
+  };
+
+  setMessages((prev) => [...prev, userMessage]);
+  setLoading(true);
+
+  try {
+    const res = await fetch(`${API_URL}/ask`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${session.access_token}`,
+      },
+      body: JSON.stringify({
+        question,
+      }),
+    });
+
+    const data = await res.json();
+
+    const assistantMessage: Message = {
+      role: "assistant",
+      content: data.answer || data.error,
     };
 
-    setMessages((prev) => [...prev, userMessage]);
-    setLoading(true);
-
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/ask`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          question,
-        }),
-      });
-
-      const data = await res.json();
-
-      const assistantMessage: Message = {
+    setMessages((prev) => [...prev, assistantMessage]);
+    setQuestion("");
+  } catch (error) {
+    setMessages((prev) => [
+      ...prev,
+      {
         role: "assistant",
-        content: data.answer || data.error,
-      };
-
-      setMessages((prev) => [...prev, assistantMessage]);
-      setQuestion("");
-    } catch (error) {
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: "assistant",
-          content: "Villa kom upp. Reyndu aftur.",
-        },
-      ]);
-    } finally {
-      setLoading(false);
-    }
-  };
+        content: "Villa kom upp. Reyndu aftur.",
+      },
+    ]);
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
   <main className="min-h-screen bg-blue-50 p-6">
@@ -183,7 +215,12 @@ useEffect(() => {
 
             <button
               onClick={async () => {
-                await supabase.auth.signOut();
+               await supabase.auth.signOut();
+
+                setUser(null);
+                setMessages([]);
+
+                window.location.reload();
               }}
               className="bg-red-500 text-white px-4 py-2 rounded-xl"
             >
@@ -193,9 +230,16 @@ useEffect(() => {
 
           <button
             onClick={async () => {
-              await fetch(`${API_URL}/messages`, {
-                method: "DELETE",
-              });
+              const {
+              data: { session },
+            } = await supabase.auth.getSession();
+
+            await fetch(`${API_URL}/messages`, {
+              method: "DELETE",
+              headers: {
+                Authorization: `Bearer ${session?.access_token}`,
+              },
+            });
 
               setMessages([]);
             }}
