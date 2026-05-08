@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "../lib/supabase";
+import QuickActions from "@/components/QuickActions"
 
 type Message = {
   role: "user" | "assistant";
@@ -19,6 +20,13 @@ export default function Home() {
   const [user, setUser] = useState<any>(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const handleQuickAction = (selectedQuestion: string) => {
+    setQuestion(selectedQuestion);
+
+    if (!user) {
+      alert("Skráðu þig inn til að spyrja Visku. Spurningin bíður tilbúin fyrir þig.");
+    }
+  };
 
 useEffect(() => {
   const loadMessages = async () => {
@@ -103,9 +111,6 @@ useEffect(() => {
     data: { session },
   } = await supabase.auth.getSession();
 
-console.log("SESSION:", session);
-console.log("TOKEN:", session?.access_token);
-
   if (!session?.access_token) {
     alert("Þú þarft að vera innskráður.");
     return;
@@ -154,18 +159,29 @@ console.log("TOKEN:", session?.access_token);
 };
 
   return (
-  <main className="min-h-screen bg-blue-50 p-6">
+  <main className="max-w-2xl mx-auto px-4 py-6">
     <div className="max-w-3xl mx-auto">
       <h1 className="text-5xl font-bold text-blue-900">
         Viska
       </h1>
 
       <p className="text-xl mt-4 text-gray-700">
-        AI hjálp fyrir eldri borgara á Íslandi
+        Stafræn hjálp fyrir eldri borgara á Íslandi
       </p>
+
+      <QuickActions onSelect={handleQuickAction} />
 
       {!user && (
         <div className="bg-white rounded-2xl shadow p-6 mt-8">
+          {question && (
+            <div className="bg-blue-50 border border-blue-200 text-blue-900 rounded-xl p-4 mb-4">
+              <p className="font-semibold">Valin spurning:</p>
+              <p>{question}</p>
+              <p className="text-sm mt-2">
+                Skráðu þig inn til að senda spurninguna til Visku.
+              </p>
+            </div>
+          )}
           <h2 className="text-2xl font-bold mb-4">
             Innskráning
           </h2>
