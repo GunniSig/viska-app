@@ -8,6 +8,8 @@ import { createClient } from "@supabase/supabase-js";
 const { PrismaClient } = pkg;
 
 dotenv.config();
+console.log("SUPABASE_URL:", process.env.SUPABASE_URL);
+console.log("SUPABASE_ANON_KEY EXISTS:", !!process.env.SUPABASE_ANON_KEY);
 
 const app = express();
 
