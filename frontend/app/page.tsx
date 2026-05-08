@@ -20,6 +20,16 @@ export default function Home() {
   const [user, setUser] = useState<any>(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const handleLogin = async () => {
+  const { error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
+
+  if (error) {
+    alert(error.message);
+  }
+};
   const handleQuickAction = (selectedQuestion: string) => {
     setQuestion(selectedQuestion);
 
@@ -159,20 +169,26 @@ useEffect(() => {
 };
 
   return (
-  <main className="max-w-2xl mx-auto px-4 py-6">
-    <div className="max-w-3xl mx-auto">
-      <h1 className="text-5xl font-bold text-blue-900">
+  <main className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
+    <div className="max-w-3xl mx-auto px-4 py-8">
+      <h1 className="text-6xl font-extrabold text-blue-900 tracking-tight">
         Viska
       </h1>
 
-      <p className="text-xl mt-4 text-gray-700">
-        Stafræn hjálp fyrir eldri borgara á Íslandi
+      <p className="text-xl mt-4 text-gray-600 leading-relaxed max-w-xl">
+        Stafræn hjálparaðstoð á mannamáli fyrir daglegt líf.
       </p>
 
       <QuickActions onSelect={handleQuickAction} />
 
       {!user && (
-        <div className="bg-white rounded-2xl shadow p-6 mt-8">
+        <form
+            onSubmit={async (e) => {
+              e.preventDefault();
+              await handleLogin();
+            }}
+            className="bg-white rounded-2xl shadow p-6 mt-8"
+          >
           {question && (
             <div className="bg-blue-50 border border-blue-200 text-blue-900 rounded-xl p-4 mb-4">
               <p className="font-semibold">Valin spurning:</p>
@@ -192,6 +208,12 @@ useEffect(() => {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className="w-full border rounded-xl p-4 mb-4"
+            onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              handleLogin();
+            }
+          }}
           />
 
           <input
@@ -199,12 +221,19 @@ useEffect(() => {
             placeholder="Lykilorð"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                handleLogin();
+              }
+            }}
             className="w-full border rounded-xl p-4 mb-4"
           />
 
           <div className="flex gap-4">
             <button
-              onClick={async () => {
+                type="button"
+                onClick={async () => {
                 setMessages([]);
 
                 const { data, error } = await supabase.auth.signUp({
@@ -228,22 +257,13 @@ useEffect(() => {
             </button>
 
             <button
-              onClick={async () => {
-                const { error } = await supabase.auth.signInWithPassword({
-                  email,
-                  password,
-                });
-
-                if (error) {
-                  alert(error.message);
-                }
-              }}
+              type="submit"
               className="bg-blue-600 text-white px-4 py-3 rounded-xl"
             >
               Innskrá
             </button>
           </div>
-        </div>
+        </form>
       )}
 
       {user && (
