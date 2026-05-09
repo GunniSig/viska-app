@@ -23,9 +23,15 @@ export default function Home() {
   const [password, setPassword] = useState("");
   const [loginMessage, setLoginMessage] = useState("");
   const [authLoading, setAuthLoading] = useState(false);
+  const [locationError, setLocationError] = useState("");
+
+  const [location, setLocation] = useState<{
+    lat: number;
+    lng: number;
+  } | null>(null);
 
   const handleLogin = async () => {
-  setAuthLoading(true);
+    setAuthLoading(true);
 
   const { error } = await supabase.auth.signInWithPassword({
     email,
@@ -110,7 +116,33 @@ useEffect(() => {
 }, [API_URL, user]);
 
 useEffect(() => {
+  if (!navigator.geolocation) {
+    setLocationError("Vafrinn styður ekki staðsetningu.");
+    return;
+  }
 
+  navigator.geolocation.getCurrentPosition(
+    (position) => {
+      setLocation({
+        lat: position.coords.latitude,
+        lng: position.coords.longitude,
+      });
+      setLocationError("");
+    },
+    (error) => {
+      console.error("GPS villa:", error);
+      setLocationError("Ekki tókst að sækja staðsetningu. Athugaðu leyfi í vafranum.");
+    }
+  );
+}, []);
+
+{locationError && (
+  <div className="mt-4 rounded-xl bg-red-50 border border-red-200 p-4 text-red-800">
+    {locationError}
+  </div>
+)}
+
+useEffect(() => {
   supabase.auth.getSession().then(({ data }) => {
     setUser(data.session?.user || null);
   });
@@ -203,6 +235,18 @@ useEffect(() => {
       </p>
 
       <QuickActions onSelect={handleQuickAction} />
+
+      {location && (
+        <div className="mt-4 rounded-xl bg-green-50 border border-green-200 p-4 text-green-800">
+          Staðsetning virk ✅
+        </div>
+      )}
+
+      {!location && (
+        <div className="mt-4 rounded-xl bg-yellow-50 border border-yellow-200 p-4 text-yellow-800">
+          Staðsetning ekki virk enn.
+        </div>
+      )}
 
       {!user && (
         <form
