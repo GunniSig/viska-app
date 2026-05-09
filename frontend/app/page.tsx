@@ -22,8 +22,11 @@ export default function Home() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loginMessage, setLoginMessage] = useState("");
+  const [authLoading, setAuthLoading] = useState(false);
 
   const handleLogin = async () => {
+  setAuthLoading(true);
+
   const { error } = await supabase.auth.signInWithPassword({
     email,
     password,
@@ -32,6 +35,8 @@ export default function Home() {
   if (error) {
     alert(error.message);
   }
+
+  setAuthLoading(false);
 };
 
   const handleQuickAction = (selectedQuestion: string) => {
@@ -283,9 +288,10 @@ useEffect(() => {
 
             <button
               type="submit"
-              className="bg-blue-600 text-white px-4 py-3 rounded-xl"
+              disabled={authLoading}
+              className="bg-blue-600 text-white px-4 py-3 rounded-xl disabled:bg-gray-400"
             >
-              Innskrá
+              {authLoading ? "Skrái inn..." : "Innskrá"}
             </button>
           </div>
         </form>
