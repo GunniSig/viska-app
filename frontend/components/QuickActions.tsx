@@ -56,16 +56,15 @@ export default function QuickActions({ onSelect }: QuickActionsProps) {
           key={action.title}
           onClick={() => onSelect(action.question)}
           className="
-            bg-white
-            rounded-2xl
-            p-5
-            shadow-sm
+            bg-white/90
+            backdrop-blur
+            rounded-3xl
+            p-6
+            shadow-md
             border
-            border-gray-200
-            text-left
-            hover:bg-gray-50
-            transition
-            min-h-[140px]
+            border-white
+            hover:shadow-xl
+            hover:scale-[1.02]
           "
         >
           <div className="text-4xl mb-3">{action.emoji}</div>

@@ -14,12 +14,15 @@ export default function Home() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
-
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const emailRef = useRef<HTMLInputElement | null>(null);
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
   const [user, setUser] = useState<any>(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loginMessage, setLoginMessage] = useState("");
+
   const handleLogin = async () => {
   const { error } = await supabase.auth.signInWithPassword({
     email,
@@ -30,13 +33,26 @@ export default function Home() {
     alert(error.message);
   }
 };
-  const handleQuickAction = (selectedQuestion: string) => {
-    setQuestion(selectedQuestion);
 
-    if (!user) {
-      alert("Skráðu þig inn til að spyrja Visku. Spurningin bíður tilbúin fyrir þig.");
-    }
-  };
+  const handleQuickAction = (selectedQuestion: string) => {
+  setQuestion(selectedQuestion);
+
+  if (!user) {
+    setLoginMessage(
+      "Skráðu þig inn til að senda spurninguna til Visku."
+    );
+
+    setTimeout(() => {
+      emailRef.current?.focus();
+    }, 100);
+
+    return;
+  }
+
+  setTimeout(() => {
+    textareaRef.current?.focus();
+  }, 100);
+};
 
 useEffect(() => {
   const loadMessages = async () => {
@@ -132,6 +148,8 @@ useEffect(() => {
   };
 
   setMessages((prev) => [...prev, userMessage]);
+  const submittedQuestion = question;
+  setQuestion("");
   setLoading(true);
 
   try {
@@ -142,8 +160,8 @@ useEffect(() => {
         Authorization: `Bearer ${session.access_token}`,
       },
       body: JSON.stringify({
-        question,
-      }),
+      question: submittedQuestion,
+    }),
     });
 
     const data = await res.json();
@@ -200,9 +218,16 @@ useEffect(() => {
           )}
           <h2 className="text-2xl font-bold mb-4">
             Innskráning
+          
           </h2>
+          {loginMessage && (
+            <div className="bg-blue-50 border border-blue-200 text-blue-900 rounded-xl p-4 mb-4">
+              {loginMessage}
+            </div>
+          )}
 
           <input
+            ref={emailRef}
             type="email"
             placeholder="Netfang"
             value={email}
@@ -351,6 +376,7 @@ useEffect(() => {
 
           <div className="bg-white rounded-2xl shadow p-6 mt-6">
             <textarea
+              ref={textareaRef}
               className="w-full border rounded-xl p-4 text-lg"
               rows={4}
               value={question}
