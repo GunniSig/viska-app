@@ -14,11 +14,14 @@ export default function Home() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
+  const hasUserSentMessage = useRef(false);
+  const hasInitialMessagesLoaded = useRef(false);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const emailRef = useRef<HTMLInputElement | null>(null);
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
   const [user, setUser] = useState<any>(null);
+  const [authReady, setAuthReady] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loginMessage, setLoginMessage] = useState("");
@@ -47,7 +50,7 @@ export default function Home() {
   setAuthLoading(false);
 };
 
-  const handleQuickAction = (selectedQuestion: string) => {
+  const handleQuickAction = async (selectedQuestion: string) => {
   setQuestion(selectedQuestion);
 
   if (!user) {
@@ -61,6 +64,8 @@ export default function Home() {
 
     return;
   }
+
+  await askBackend(selectedQuestion);
 
   setTimeout(() => {
     textareaRef.current?.focus();
@@ -146,31 +151,41 @@ useEffect(() => {
 
 useEffect(() => {
   supabase.auth.getSession().then(({ data }) => {
-    setUser(data.session?.user || null);
-  });
+  setUser(data.session?.user || null);
+  setAuthReady(true);
+});
 
   const {
     data: { subscription },
   } = supabase.auth.onAuthStateChange((_event, session) => {
     setUser(session?.user || null);
+    setAuthReady(true);
+
     if (!session?.user) {
       setMessages([]);
     }
   });
-
+  
   return () => {
     subscription.unsubscribe();
   };
 
 }, []);
 
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({
-      behavior: "smooth",
-    });
-  }, [messages]);
-  const askBackend = async () => {
-  if (!question.trim()) return;
+
+
+ useEffect(() => {
+  if (!hasUserSentMessage.current) return;
+
+  messagesEndRef.current?.scrollIntoView({
+    behavior: "smooth",
+  });
+}, [messages.length]);
+
+  const askBackend = async (customQuestion?: string) => {
+  const questionToSend = customQuestion || question;
+
+  if (!questionToSend.trim()) return;
 
   const {
     data: { session },
@@ -181,13 +196,15 @@ useEffect(() => {
     return;
   }
 
+  hasUserSentMessage.current = true;
+
   const userMessage: Message = {
     role: "user",
-    content: question,
+    content: questionToSend,
   };
 
   setMessages((prev) => [...prev, userMessage]);
-  const submittedQuestion = question;
+  const submittedQuestion = questionToSend;
   setQuestion("");
   setLoading(true);
 
@@ -227,102 +244,58 @@ useEffect(() => {
   }
 };
 
+if (!authReady) {
   return (
-  <main className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
-    <div className="max-w-3xl mx-auto px-4 py-8">
-      <h1 className="text-6xl font-extrabold text-blue-900 tracking-tight">
-        Viska
-      </h1>
+    <main className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex items-center justify-center">
+      <div className="bg-white rounded-2xl shadow p-6 text-blue-900 text-xl font-semibold">
+        Sæki Visku...
+      </div>
+    </main>
+  );
+}
 
-      <p className="text-xl mt-4 text-gray-600 leading-relaxed max-w-xl">
-        Stafræn hjálparaðstoð á mannamáli fyrir daglegt líf.
-      </p>
+  return (
+  <main className="h-screen bg-gradient-to-b from-blue-50 to-white overflow-hidden">
+    <div className="max-w-3xl mx-auto h-full px-4 py-4 flex flex-col">
+      <div className="shrink-0">
+        <h1 className="text-6xl font-extrabold text-blue-900 tracking-tight">
+          Viska
+        </h1>
 
-      <QuickActions onSelect={handleQuickAction} />
+        <p className="text-xl mt-4 text-gray-600 leading-relaxed max-w-xl">
+          Stafræn hjálparaðstoð á mannamáli fyrir daglegt líf.
+        </p>
 
-      <div className="mt-4 bg-white rounded-2xl shadow p-4">
-        <h3 className="font-bold text-lg mb-3">
-          Handvirk staðsetning
-        </h3>
+        <QuickActions onSelect={handleQuickAction} />
 
-        <div className="grid grid-cols-2 gap-3">
-          <input
-            type="text"
-            placeholder="Breidd"
-            value={manualLat}
-            onChange={(e) => setManualLat(e.target.value)}
-            className="border rounded-xl p-3"
-          />
+        {location && (
+          <div className="mt-4 rounded-xl bg-green-50 border border-green-200 p-4 text-green-800">
+            <p>Staðsetning virk ✅</p>
+            <p className="text-sm mt-2">
+              {location.lat}, {location.lng}
+            </p>
+          </div>
+        )}
 
-          <input
-            type="text"
-            placeholder="Lengd"
-            value={manualLng}
-            onChange={(e) => setManualLng(e.target.value)}
-            className="border rounded-xl p-3"
-          />
-        </div>
+        {!location && !locationError && (
+          <div className="mt-4 rounded-xl bg-yellow-50 border border-yellow-200 p-4 text-yellow-800">
+            Sæki staðsetningu...
+          </div>
+        )}
 
-        <button
-          onClick={() => {
-            const lat = parseFloat(manualLat);
-            const lng = parseFloat(manualLng);
-
-            if (isNaN(lat) || isNaN(lng)) {
-              alert("Ógild staðsetning.");
-              return;
-            }
-
-            setLocation({
-              lat,
-              lng,
-            });
-          }}
-          className="mt-4 bg-blue-600 text-white px-4 py-3 rounded-xl"
-        >
-          Nota handvirka staðsetningu
-        </button>
+        {locationError && (
+          <div className="mt-4 rounded-xl bg-red-50 border border-red-200 p-4 text-red-800">
+            {locationError}
+          </div>
+        )}
       </div>
 
-      {location && (
-        <div className="mt-4 rounded-xl bg-green-50 border border-green-200 p-4 text-green-800">
-          Staðsetning virk ✅
-
-          <br />
-
-          <span className="text-sm">
-            {location?.lat}, {location?.lng}
-          </span>
-        </div>
-      )}
-
-      {!location && (
-        <div className="mt-4 rounded-xl bg-yellow-50 border border-yellow-200 p-4 text-yellow-800">
-          Staðsetning ekki virk enn.
-        </div>
-      )}
-
       {!user && (
-        <form
-            onSubmit={async (e) => {
-              e.preventDefault();
-              await handleLogin();
-            }}
-            className="bg-white rounded-2xl shadow p-6 mt-8"
-          >
-          {question && (
-            <div className="bg-blue-50 border border-blue-200 text-blue-900 rounded-xl p-4 mb-4">
-              <p className="font-semibold">Valin spurning:</p>
-              <p>{question}</p>
-              <p className="text-sm mt-2">
-                Skráðu þig inn til að senda spurninguna til Visku.
-              </p>
-            </div>
-          )}
+        <div className="bg-white rounded-2xl shadow p-6 mt-6 overflow-y-auto">
           <h2 className="text-2xl font-bold mb-4">
             Innskráning
-          
           </h2>
+
           {loginMessage && (
             <div className="bg-blue-50 border border-blue-200 text-blue-900 rounded-xl p-4 mb-4">
               {loginMessage}
@@ -335,13 +308,13 @@ useEffect(() => {
             placeholder="Netfang"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full border rounded-xl p-4 mb-4"
             onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              e.preventDefault();
-              handleLogin();
-            }
-          }}
+              if (e.key === "Enter") {
+                e.preventDefault();
+                handleLogin();
+              }
+            }}
+            className="w-full border rounded-xl p-4 mb-4"
           />
 
           <input
@@ -360,8 +333,8 @@ useEffect(() => {
 
           <div className="flex gap-4">
             <button
-                type="button"
-                onClick={async () => {
+              type="button"
+              onClick={async () => {
                 setMessages([]);
 
                 const { data, error } = await supabase.auth.signUp({
@@ -385,30 +358,29 @@ useEffect(() => {
             </button>
 
             <button
-              type="submit"
+              type="button"
+              onClick={handleLogin}
               disabled={authLoading}
               className="bg-blue-600 text-white px-4 py-3 rounded-xl disabled:bg-gray-400"
             >
               {authLoading ? "Skrái inn..." : "Innskrá"}
             </button>
           </div>
-        </form>
+        </div>
       )}
 
       {user && (
-        <>
-          <div className="flex justify-between items-center mt-6 bg-white rounded-2xl shadow p-4">
+        <div className="flex-1 min-h-0 flex flex-col mt-4">
+          <div className="shrink-0 flex justify-between items-center bg-white rounded-2xl shadow p-4">
             <p className="text-sm text-gray-500">
               Innskráður sem: {user.email}
             </p>
 
             <button
               onClick={async () => {
-               await supabase.auth.signOut();
-
+                await supabase.auth.signOut();
                 setUser(null);
                 setMessages([]);
-
                 window.location.reload();
               }}
               className="bg-red-500 text-white px-4 py-2 rounded-xl"
@@ -420,24 +392,24 @@ useEffect(() => {
           <button
             onClick={async () => {
               const {
-              data: { session },
-            } = await supabase.auth.getSession();
+                data: { session },
+              } = await supabase.auth.getSession();
 
-            await fetch(`${API_URL}/messages`, {
-              method: "DELETE",
-              headers: {
-                Authorization: `Bearer ${session?.access_token}`,
-              },
-            });
+              await fetch(`${API_URL}/messages`, {
+                method: "DELETE",
+                headers: {
+                  Authorization: `Bearer ${session?.access_token}`,
+                },
+              });
 
               setMessages([]);
             }}
-            className="mt-4 bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-xl"
+            className="shrink-0 mt-3 bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-xl"
           >
             Hreinsa samtal
           </button>
 
-          <div className="bg-white rounded-2xl shadow p-6 mt-8 space-y-4">
+          <div className="flex-1 min-h-0 overflow-y-auto bg-white rounded-2xl shadow p-6 mt-4 space-y-4">
             {messages.length === 0 && (
               <p className="text-gray-500 text-lg">
                 Spyrðu Visku um lífeyri, réttindi eða þjónustu.
@@ -470,19 +442,22 @@ useEffect(() => {
             ))}
 
             {loading && (
-              <p className="text-gray-500 text-lg">
-                Viska er að hugsa...
-              </p>
+              <div className="flex items-center gap-2 text-gray-500 text-lg">
+                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-100"></div>
+                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-200"></div>
+                <span className="ml-2">Viska er að hugsa...</span>
+              </div>
             )}
 
             <div ref={messagesEndRef} />
           </div>
 
-          <div className="bg-white rounded-2xl shadow p-6 mt-6">
+          <div className="shrink-0 bg-white rounded-2xl shadow p-4 mt-4">
             <textarea
               ref={textareaRef}
               className="w-full border rounded-xl p-4 text-lg"
-              rows={4}
+              rows={3}
               value={question}
               onChange={(e) => setQuestion(e.target.value)}
               onKeyDown={(e) => {
@@ -495,14 +470,14 @@ useEffect(() => {
             />
 
             <button
-              onClick={askBackend}
+              onClick={() => askBackend()}
               disabled={loading}
-              className="mt-4 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-6 py-3 rounded-xl text-lg"
+              className="mt-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-6 py-3 rounded-xl text-lg"
             >
               {loading ? "Viska hugsar..." : "Spyrja Visku"}
             </button>
           </div>
-        </>
+        </div>
       )}
     </div>
   </main>
