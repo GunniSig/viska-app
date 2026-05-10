@@ -5,6 +5,7 @@ import OpenAI from "openai";
 import pkg from "@prisma/client";
 import { createClient } from "@supabase/supabase-js";
 
+const axios = require("axios");
 const { PrismaClient } = pkg;
 
 dotenv.config();
@@ -115,6 +116,32 @@ app.delete("/messages", async (req, res) => {
   }
 });
 
+async function findNearbyPharmacy(lat, lng) {
+  try {
+    const response = await axios.get(
+      `https://nominatim.openstreetmap.org/search`,
+      {
+        params: {
+          q: "pharmacy",
+          format: "json",
+          limit: 3,
+          lat,
+          lon: lng,
+        },
+        headers: {
+          "User-Agent": "ViskaApp/1.0",
+        },
+      }
+    );
+
+    return response.data;
+  } catch (error) {
+    console.error("Nominatim villa:", error);
+
+    return [];
+  }
+}
+
 app.post("/ask", async (req, res) => {
 
   try {
@@ -128,6 +155,8 @@ app.post("/ask", async (req, res) => {
     }
 
     const { question, lat, lng } = req.body;
+
+    let nearbyPharmacies = [];
 
     await prisma.chatMessage.create({
       data: {
@@ -154,6 +183,7 @@ Mikilvægt:
 - Ef staðsetning er til staðar, segðu að þú getir hjálpað að leita að þjónustu nálægt þessari staðsetningu.
 - Ef staðsetning vantar, biddu notanda vinsamlega að leyfa staðsetningu í vafranum.
 - Notaðu einfalt mál og stuttar setningar.
+
 
 Spurning:
 ${question}
