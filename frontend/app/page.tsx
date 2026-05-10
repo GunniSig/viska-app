@@ -198,6 +198,8 @@ useEffect(() => {
       },
       body: JSON.stringify({
       question: submittedQuestion,
+      lat: location?.lat,
+      lng: location?.lng,
     }),
     });
 
