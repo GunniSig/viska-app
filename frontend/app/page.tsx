@@ -241,6 +241,12 @@ useEffect(() => {
       {location && (
         <div className="mt-4 rounded-xl bg-green-50 border border-green-200 p-4 text-green-800">
           Staðsetning virk ✅
+
+          <br />
+
+          <span className="text-sm">
+            {location?.lat}, {location?.lng}
+          </span>
         </div>
       )}
 
