@@ -4,8 +4,8 @@ import dotenv from "dotenv";
 import OpenAI from "openai";
 import pkg from "@prisma/client";
 import { createClient } from "@supabase/supabase-js";
+import axios from "axios";
 
-const axios = require("axios");
 const { PrismaClient } = pkg;
 
 dotenv.config();
