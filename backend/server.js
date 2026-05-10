@@ -177,12 +177,11 @@ Latitude: ${lat || "óþekkt"}
 Longitude: ${lng || "óþekkt"}
 
 Reglur:
-- Ekki segja "viltu að ég leiti?" ef notandi hefur þegar spurt.
-- Ef notandi spyr "Hvar er næsta apótek?" skaltu ekki biðja aftur um staðfestingu.
-- Ef engin raunleitargögn eru til staðar, segðu heiðarlega að Viska sé ekki enn tengd lifandi apótekaleit.
+- ALDREI spyrja "Viltu að ég leiti?".
+- Ekki biðja um staðfestingu ef notandi hefur þegar spurt.
+- Ef notandi spyr um næsta apótek og engin apótekagögn eru til staðar, segðu strax að Viska sé ekki enn tengd lifandi apótekaleit.
 - Ekki búa til nöfn á apótekum, opnunartíma eða fjarlægðir.
-- Ef staðsetning er til staðar, segðu að næsta tæknilega skref sé að tengja lifandi þjónustuleit.
-- Gefðu notanda gagnlegt næsta skref, t.d. að opna Já.is, Google Maps eða hringja í 1700 ef við á.
+- Gefðu notanda gagnlegt næsta skref.
 - Hafðu svarið stutt.
 
 Spurning notanda:
