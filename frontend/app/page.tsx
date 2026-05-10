@@ -24,6 +24,8 @@ export default function Home() {
   const [loginMessage, setLoginMessage] = useState("");
   const [authLoading, setAuthLoading] = useState(false);
   const [locationError, setLocationError] = useState("");
+  const [manualLat, setManualLat] = useState("");
+  const [manualLng, setManualLng] = useState("");
 
   const [location, setLocation] = useState<{
     lat: number;
@@ -237,6 +239,50 @@ useEffect(() => {
       </p>
 
       <QuickActions onSelect={handleQuickAction} />
+
+      <div className="mt-4 bg-white rounded-2xl shadow p-4">
+        <h3 className="font-bold text-lg mb-3">
+          Handvirk staðsetning
+        </h3>
+
+        <div className="grid grid-cols-2 gap-3">
+          <input
+            type="text"
+            placeholder="Breidd"
+            value={manualLat}
+            onChange={(e) => setManualLat(e.target.value)}
+            className="border rounded-xl p-3"
+          />
+
+          <input
+            type="text"
+            placeholder="Lengd"
+            value={manualLng}
+            onChange={(e) => setManualLng(e.target.value)}
+            className="border rounded-xl p-3"
+          />
+        </div>
+
+        <button
+          onClick={() => {
+            const lat = parseFloat(manualLat);
+            const lng = parseFloat(manualLng);
+
+            if (isNaN(lat) || isNaN(lng)) {
+              alert("Ógild staðsetning.");
+              return;
+            }
+
+            setLocation({
+              lat,
+              lng,
+            });
+          }}
+          className="mt-4 bg-blue-600 text-white px-4 py-3 rounded-xl"
+        >
+          Nota handvirka staðsetningu
+        </button>
+      </div>
 
       {location && (
         <div className="mt-4 rounded-xl bg-green-50 border border-green-200 p-4 text-green-800">
