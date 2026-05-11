@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "../lib/supabase";
 import QuickActions from "@/components/QuickActions"
+import ReactMarkdown from "react-markdown";
 
 type Message = {
   role: "user" | "assistant";
@@ -223,22 +224,21 @@ useEffect(() => {
     }),
     });
 
-    const data = await res.json();
+  const data = await res.json();
 
-    const fullText = data.answer || data.error;
+  const fullText = data.answer || data.error;
 
 setTypingText("");
 
 let currentText = "";
 
-for (let i = 0; i < fullText.length; i++) {
-  currentText += fullText[i];
+const words = fullText.split(" ");
 
+for (let i = 0; i < words.length; i++) {
+  currentText += (i === 0 ? "" : " ") + words[i];
   setTypingText(currentText);
 
-  await new Promise((resolve) =>
-    setTimeout(resolve, 8)
-  );
+  await new Promise((resolve) => setTimeout(resolve, 250));
 }
 
     const assistantMessage: Message = {
@@ -456,9 +456,11 @@ if (!authReady) {
                     {message.role === "user" ? "Þú" : "Viska"}
                   </p>
 
-                  <p className="whitespace-pre-line leading-8">
-                    {message.content}
-                  </p>
+                  <div className="prose prose-lg max-w-none">
+                    <ReactMarkdown>
+                      {message.content}
+                    </ReactMarkdown>
+                  </div>
                 </div>
               </div>
             ))}
