@@ -255,9 +255,9 @@ if (!authReady) {
 }
 
   return (
-  <main className="h-screen bg-gradient-to-b from-blue-50 to-white overflow-hidden">
-    <div className="max-w-3xl mx-auto h-full px-4 py-4 flex flex-col">
-      <div className="shrink-0">
+  <main className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
+    <div className="max-w-3xl mx-auto px-4 py-8">
+      
         <h1 className="text-6xl font-extrabold text-blue-900 tracking-tight">
           Viska
         </h1>
@@ -291,7 +291,7 @@ if (!authReady) {
       </div>
 
       {!user && (
-        <div className="bg-white rounded-2xl shadow p-6 mt-6 overflow-y-auto">
+         <div className="bg-white rounded-2xl shadow p-6 mt-8">
           <h2 className="text-2xl font-bold mb-4">
             Innskráning
           </h2>
