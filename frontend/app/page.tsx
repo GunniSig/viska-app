@@ -257,7 +257,7 @@ if (!authReady) {
   return (
   <main className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
     <div className="max-w-3xl mx-auto px-4 py-8">
-      
+      <div>
         <h1 className="text-6xl font-extrabold text-blue-900 tracking-tight">
           Viska
         </h1>
@@ -291,7 +291,7 @@ if (!authReady) {
       </div>
 
       {!user && (
-         <div className="bg-white rounded-2xl shadow p-6 mt-8">
+  <div className="bg-white rounded-2xl shadow p-6 mt-8">
           <h2 className="text-2xl font-bold mb-4">
             Innskráning
           </h2>
