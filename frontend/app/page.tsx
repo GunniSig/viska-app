@@ -13,6 +13,7 @@ export default function Home() {
   const [question, setQuestion] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
+  const [typingText, setTypingText] = useState("");
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const hasUserSentMessage = useRef(false);
   const hasInitialMessagesLoaded = useRef(false);
@@ -224,12 +225,31 @@ useEffect(() => {
 
     const data = await res.json();
 
+    const fullText = data.answer || data.error;
+
+setTypingText("");
+
+let currentText = "";
+
+for (let i = 0; i < fullText.length; i++) {
+  currentText += fullText[i];
+
+  setTypingText(currentText);
+
+  await new Promise((resolve) =>
+    setTimeout(resolve, 8)
+  );
+}
+
     const assistantMessage: Message = {
       role: "assistant",
-      content: data.answer || data.error,
+      content: fullText,
     };
 
     setMessages((prev) => [...prev, assistantMessage]);
+
+    setTypingText("");
+
     setQuestion("");
   } catch (error) {
     setMessages((prev) => [
@@ -291,7 +311,7 @@ if (!authReady) {
       </div>
 
       {!user && (
-  <div className="bg-white rounded-2xl shadow p-6 mt-8">
+         <div className="bg-white rounded-2xl shadow p-6 mt-8">
           <h2 className="text-2xl font-bold mb-4">
             Innskráning
           </h2>
@@ -308,12 +328,7 @@ if (!authReady) {
             placeholder="Netfang"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.preventDefault();
-                handleLogin();
-              }
-            }}
+            autoComplete="off"
             className="w-full border rounded-xl p-4 mb-4"
           />
 
@@ -322,12 +337,7 @@ if (!authReady) {
             placeholder="Lykilorð"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.preventDefault();
-                handleLogin();
-              }
-            }}
+            autoComplete="new-password"
             className="w-full border rounded-xl p-4 mb-4"
           />
 
@@ -411,9 +421,21 @@ if (!authReady) {
 
           <div className="flex-1 min-h-0 overflow-y-auto bg-white rounded-2xl shadow p-6 mt-4 space-y-4">
             {messages.length === 0 && (
-              <p className="text-gray-500 text-lg">
-                Spyrðu Visku um lífeyri, réttindi eða þjónustu.
-              </p>
+              <div className="text-center py-8">
+                <div className="text-5xl mb-4">💬</div>
+
+                <h2 className="text-2xl font-bold text-blue-900">
+                  Hvernig getur Viska hjálpað?
+                </h2>
+
+                <p className="text-gray-600 text-lg mt-3">
+                  Spyrðu um réttindi, lífeyri, þjónustu eða daglegt líf.
+                </p>
+
+                <p className="text-gray-500 mt-4">
+                  Þú getur líka ýtt á kortin hér fyrir ofan til að byrja.
+                </p>
+              </div>
             )}
 
             {messages.map((message, index) => (
@@ -442,11 +464,16 @@ if (!authReady) {
             ))}
 
             {loading && (
-              <div className="flex items-center gap-2 text-gray-500 text-lg">
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-100"></div>
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-200"></div>
-                <span className="ml-2">Viska er að hugsa...</span>
+              <div className="flex justify-start">
+                <div className="max-w-[80%] p-4 rounded-2xl shadow bg-gray-100 text-gray-800">
+                  <p className="text-sm font-bold mb-2">
+                    Viska
+                  </p>
+
+                  <p className="whitespace-pre-line leading-8">
+                    {typingText}
+                  </p>
+                </div>
               </div>
             )}
 
