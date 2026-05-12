@@ -160,6 +160,18 @@ app.post("/ask", async (req, res) => {
     const pharmacyMapLink = hasLocation
       ? `https://www.google.com/maps/search/apótek/@${lat},${lng},14z`
       : null;
+      const healthMapLink = hasLocation
+      ? `https://www.google.com/maps/search/heilsugæsla/@${lat},${lng},14z`
+      : null;
+
+    const busMapLink = hasLocation
+      ? `https://www.google.com/maps/search/bus+stop/@${lat},${lng},14z`
+      : null;
+
+    const servicesMapLink = hasLocation
+      ? `https://www.google.com/maps/search/þjónusta/@${lat},${lng},14z`
+      : null;
+      
     let nearbyPharmacies = [];
 
     await prisma.chatMessage.create({
@@ -187,9 +199,20 @@ Reglur:
 - Ekki búa til nöfn, opnunartíma eða fjarlægðir.
 - Notaðu markdown þegar það hjálpar.
 - Hafðu svarið stutt og gagnlegt.
+- Ef notandi spyr um heilsu eða heilsugæslu og staðsetning er til staðar, gefðu heilsugæslu-kortahlekkinn.
+- Ef notandi spyr um strætó eða stoppistöð og staðsetning er til staðar, gefðu strætó-kortahlekkinn.
+- Ef notandi spyr um þjónustu nálægt sér og staðsetning er til staðar, gefðu almenna þjónustu-kortahlekkinn.
 
 Kortahlekkur fyrir apótek nálægt notanda:
 ${pharmacyMapLink || "engin staðsetning til staðar"}
+Kortahlekkur fyrir heilsugæslu nálægt notanda:
+${healthMapLink || "engin staðsetning til staðar"}
+
+Kortahlekkur fyrir strætó eða stoppistöð nálægt notanda:
+${busMapLink || "engin staðsetning til staðar"}
+
+Kortahlekkur fyrir almenna þjónustu nálægt notanda:
+${servicesMapLink || "engin staðsetning til staðar"}
 
 Spurning notanda:
 ${question}

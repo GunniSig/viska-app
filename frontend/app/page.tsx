@@ -344,6 +344,12 @@ if (!authReady) {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             autoComplete="off"
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                handleLogin();
+              }
+            }}
             className="w-full border rounded-xl p-4 mb-4"
           />
 
@@ -353,6 +359,12 @@ if (!authReady) {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             autoComplete="new-password"
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                handleLogin();
+              }
+            }}
             className="w-full border rounded-xl p-4 mb-4"
           />
 
