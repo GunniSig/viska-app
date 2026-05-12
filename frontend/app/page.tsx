@@ -31,7 +31,22 @@ export default function Home() {
   const [locationError, setLocationError] = useState("");
   const [manualLat, setManualLat] = useState("");
   const [manualLng, setManualLng] = useState("");
-
+  const towns = [
+    { name: "Reykjavík", lat: 64.1466, lng: -21.9426 },
+    { name: "Kópavogur", lat: 64.1123, lng: -21.9120 },
+    { name: "Hafnarfjörður", lat: 64.0671, lng: -21.9377 },
+    { name: "Akureyri", lat: 65.6885, lng: -18.1262 },
+    { name: "Reykjanesbær", lat: 63.9998, lng: -22.5583 },
+    { name: "Garðabær", lat: 64.0887, lng: -21.9220 },
+    { name: "Mosfellsbær", lat: 64.1667, lng: -21.7000 },
+    { name: "Selfoss", lat: 63.9331, lng: -20.9971 },
+    { name: "Akranes", lat: 64.3218, lng: -22.0749 },
+    { name: "Ísafjörður", lat: 66.0748, lng: -23.1349 },
+    { name: "Sauðárkrókur", lat: 65.7461, lng: -19.6394 },
+    { name: "Egilsstaðir", lat: 65.2669, lng: -14.3948 },
+    { name: "Húsavík", lat: 66.0449, lng: -17.3389 },
+    { name: "Vestmannaeyjar", lat: 63.4427, lng: -20.2734 },
+  ];
   const [location, setLocation] = useState<{
     lat: number;
     lng: number;
@@ -399,6 +414,45 @@ if (!authReady) {
             </button>
           </div>
 
+          <div className="mt-4 bg-white rounded-2xl shadow p-4">
+            <label className="block text-sm font-bold text-gray-700 mb-2">
+              Veldu staðsetningu
+            </label>
+
+            <select
+              className="w-full border rounded-xl p-3 text-lg"
+              defaultValue=""
+              onChange={(e) => {
+                const selectedTown = towns.find(
+                  (town) => town.name === e.target.value
+                );
+
+                if (!selectedTown) return;
+
+                setLocation({
+                  lat: selectedTown.lat,
+                  lng: selectedTown.lng,
+                });
+              }}
+            >
+              <option value="" disabled>
+                Veldu byggðarkjarna
+              </option>
+
+              {towns.map((town) => (
+                <option key={town.name} value={town.name}>
+                  {town.name}
+                </option>
+              ))}
+            </select>
+
+            {location && (
+              <p className="text-sm text-gray-500 mt-2">
+                Núverandi staðsetning: {location.lat}, {location.lng}
+              </p>
+            )}
+          </div>
+
           <button
             onClick={async () => {
               const {
@@ -439,31 +493,33 @@ if (!authReady) {
             )}
 
             {messages.map((message, index) => (
-              <div
-                key={index}
-                className={`flex ${
-                  message.role === "user" ? "justify-end" : "justify-start"
-                }`}
-              >
                 <div
-                  className={`max-w-[80%] p-4 rounded-2xl shadow ${
+                  key={index}
+                  className={`flex ${
                     message.role === "user"
-                      ? "bg-blue-600 text-white"
-                      : "bg-gray-100 text-gray-800"
+                      ? "justify-end"
+                      : "justify-start"
                   }`}
                 >
-                  <p className="text-sm font-bold mb-2">
-                    {message.role === "user" ? "Þú" : "Viska"}
-                  </p>
+                  <div
+                    className={`max-w-[80%] p-4 rounded-2xl shadow ${
+                      message.role === "user"
+                        ? "bg-blue-600 text-white"
+                        : "bg-gray-100 text-gray-800"
+                    }`}
+                  >
+                    <p className="text-sm font-bold mb-2">
+                      {message.role === "user" ? "Þú" : "Viska"}
+                    </p>
 
-                  <div className="prose prose-lg max-w-none">
-                    <ReactMarkdown>
-                      {message.content}
-                    </ReactMarkdown>
+                    <div className="prose prose-lg max-w-none">
+                      <ReactMarkdown>
+                        {message.content}
+                      </ReactMarkdown>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
 
             {loading && (
               <div className="flex justify-start">

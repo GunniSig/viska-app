@@ -177,12 +177,15 @@ Latitude: ${lat || "óþekkt"}
 Longitude: ${lng || "óþekkt"}
 
 Reglur:
+- Notaðu markdown þegar það hjálpar: stutta punkta, feitletrun og fyrirsagnir.
+- Hafðu svör skýr og vel uppsett.
 - ALDREI spyrja "Viltu að ég leiti?".
 - Ekki biðja um staðfestingu ef notandi hefur þegar spurt.
 - Ef notandi spyr um næsta apótek og engin apótekagögn eru til staðar, segðu strax að Viska sé ekki enn tengd lifandi apótekaleit.
 - Ekki búa til nöfn á apótekum, opnunartíma eða fjarlægðir.
 - Gefðu notanda gagnlegt næsta skref.
 - Hafðu svarið stutt.
+- Þú mátt nota markdown lista og fyrirsagnir til að gera svör skýrari.
 
 Spurning notanda:
 ${question}
