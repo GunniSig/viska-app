@@ -513,7 +513,31 @@ if (!authReady) {
                     </p>
 
                     <div className="prose prose-lg max-w-none">
-                      <ReactMarkdown>
+                      <ReactMarkdown
+                        components={{
+                          a: ({ href, children }) => (
+                            <a
+                              href={href}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="
+                                inline-block
+                                mt-3
+                                bg-blue-600
+                                hover:bg-blue-700
+                                text-white
+                                px-4
+                                py-2
+                                rounded-xl
+                                no-underline
+                                font-semibold
+                              "
+                            >
+                              📍 {children}
+                            </a>
+                          ),
+                        }}
+                      >
                         {message.content}
                       </ReactMarkdown>
                     </div>
