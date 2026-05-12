@@ -147,10 +147,15 @@ useEffect(() => {
 
   navigator.geolocation.getCurrentPosition(
     (position) => {
-      setLocation({
+      const gpsLocation = {
         lat: position.coords.latitude,
         lng: position.coords.longitude,
-      });
+      };
+
+      console.log("GPS staðsetning:", gpsLocation);
+
+      setLocation(gpsLocation);
+      
       setLocationError("");
     },
     (error) => {
@@ -440,6 +445,14 @@ if (!authReady) {
                 );
 
                 if (!selectedTown) return;
+
+                localStorage.setItem(
+                  "manualLocation",
+                  JSON.stringify({
+                    lat: selectedTown.lat,
+                    lng: selectedTown.lng,
+                  })
+                );
 
                 setLocation({
                   lat: selectedTown.lat,
