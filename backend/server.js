@@ -7,7 +7,7 @@ import { createClient } from "@supabase/supabase-js";
 import axios from "axios";
 import { lifeyrirInfo } from "./knowledge/lifeyrir.js";
 import { rettindiInfo } from "./knowledge/rettindi.js";
-import { rettindiInfo } from "./knowledge/heilsa.js";
+import { heilsaInfo } from "./knowledge/heilsa.js";
 
 const { PrismaClient } = pkg;
 
@@ -180,6 +180,18 @@ app.post("/ask", async (req, res) => {
       lowerQuestion.includes("þjónustu")
     ) {
       knowledgeContext += "\n\n" + rettindiInfo;
+    }
+
+    if (
+      lowerQuestion.includes("heilsu") ||
+      lowerQuestion.includes("lækn") ||
+      lowerQuestion.includes("veik") ||
+      lowerQuestion.includes("lyf") ||
+      lowerQuestion.includes("apótek") ||
+      lowerQuestion.includes("hjúkrun") ||
+      lowerQuestion.includes("hjálpartæki")
+    ) {
+      knowledgeContext += "\n\n" + heilsaInfo;
     }
 
     const hasLocation = lat && lng;
