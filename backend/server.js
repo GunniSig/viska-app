@@ -5,6 +5,9 @@ import OpenAI from "openai";
 import pkg from "@prisma/client";
 import { createClient } from "@supabase/supabase-js";
 import axios from "axios";
+import { lifeyrirInfo } from "./knowledge/lifeyrir.js";
+import { rettindiInfo } from "./knowledge/rettindi.js";
+import { rettindiInfo } from "./knowledge/heilsa.js";
 
 const { PrismaClient } = pkg;
 
@@ -155,6 +158,30 @@ app.post("/ask", async (req, res) => {
     }
 
     const { question, lat, lng } = req.body;
+
+    const lowerQuestion = question.toLowerCase();
+
+    let knowledgeContext = "";
+
+    if (
+      lowerQuestion.includes("lífeyri") ||
+      lowerQuestion.includes("lífeyrir") ||
+      lowerQuestion.includes("tr") ||
+      lowerQuestion.includes("ellilífeyri")
+    ) {
+      knowledgeContext += lifeyrirInfo;
+    }
+
+    if (
+      lowerQuestion.includes("réttindi") ||
+      lowerQuestion.includes("rétt") ||
+      lowerQuestion.includes("stuðning") ||
+      lowerQuestion.includes("aðstoð") ||
+      lowerQuestion.includes("þjónustu")
+    ) {
+      knowledgeContext += "\n\n" + rettindiInfo;
+    }
+
     const hasLocation = lat && lng;
 
     const pharmacyMapLink = hasLocation
@@ -213,6 +240,12 @@ ${busMapLink || "engin staðsetning til staðar"}
 
 Kortahlekkur fyrir almenna þjónustu nálægt notanda:
 ${servicesMapLink || "engin staðsetning til staðar"}
+
+Upplýsingar um lífeyri og réttindi:
+${lifeyrirInfo}
+
+Viðeigandi þekking:
+${knowledgeContext || "Engin sérstök þekking valin."}
 
 Spurning notanda:
 ${question}
