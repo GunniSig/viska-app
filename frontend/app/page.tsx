@@ -146,23 +146,31 @@ useEffect(() => {
   }
 
   navigator.geolocation.getCurrentPosition(
-    (position) => {
-      const gpsLocation = {
-        lat: position.coords.latitude,
-        lng: position.coords.longitude,
-      };
+      (position) => {
+        const gpsLocation = {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+        };
 
-      console.log("GPS staðsetning:", gpsLocation);
+        console.log("GPS staðsetning:", gpsLocation);
 
-      setLocation(gpsLocation);
-      
-      setLocationError("");
-    },
-    (error) => {
-      console.error("GPS villa:", error);
-      setLocationError("Ekki tókst að sækja staðsetningu. Athugaðu leyfi í vafranum.");
-    }
-  );
+        localStorage.removeItem("manualLocation");
+
+        setLocation(gpsLocation);
+      },
+      (error) => {
+        console.error(error);
+
+        setLocationError(
+          "Tókst ekki að sækja staðsetningu."
+        );
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0,
+      }
+    );
 }, []);
 
 {locationError && (
