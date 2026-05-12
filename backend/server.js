@@ -155,7 +155,11 @@ app.post("/ask", async (req, res) => {
     }
 
     const { question, lat, lng } = req.body;
+    const hasLocation = lat && lng;
 
+    const pharmacyMapLink = hasLocation
+      ? `https://www.google.com/maps/search/apótek/@${lat},${lng},14z`
+      : null;
     let nearbyPharmacies = [];
 
     await prisma.chatMessage.create({
@@ -177,15 +181,15 @@ Latitude: ${lat || "óþekkt"}
 Longitude: ${lng || "óþekkt"}
 
 Reglur:
-- Notaðu markdown þegar það hjálpar: stutta punkta, feitletrun og fyrirsagnir.
-- Hafðu svör skýr og vel uppsett.
-- ALDREI spyrja "Viltu að ég leiti?".
-- Ekki biðja um staðfestingu ef notandi hefur þegar spurt.
-- Ef notandi spyr um næsta apótek og engin apótekagögn eru til staðar, segðu strax að Viska sé ekki enn tengd lifandi apótekaleit.
-- Ekki búa til nöfn á apótekum, opnunartíma eða fjarlægðir.
-- Gefðu notanda gagnlegt næsta skref.
-- Hafðu svarið stutt.
-- Þú mátt nota markdown lista og fyrirsagnir til að gera svör skýrari.
+- Svaraðu spurningunni beint.
+- Ekki segja bara að þú sért ekki tengd lifandi leit.
+- Ef notandi spyr um apótek og staðsetning er til staðar, gefðu kortahlekkinn og segðu að hann opni apótek nálægt staðsetningunni.
+- Ekki búa til nöfn, opnunartíma eða fjarlægðir.
+- Notaðu markdown þegar það hjálpar.
+- Hafðu svarið stutt og gagnlegt.
+
+Kortahlekkur fyrir apótek nálægt notanda:
+${pharmacyMapLink || "engin staðsetning til staðar"}
 
 Spurning notanda:
 ${question}
